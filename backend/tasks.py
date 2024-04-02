@@ -1,6 +1,6 @@
 import json
 import base64
-from prompts import initGenPrompt, adjustGenPrompt, modifyGenPrompt
+from prompts import initGenPrompt, adjustGenPrompt, selfRevisionPrompt, modifyGenPrompt
 import uuid
 import os
 from utils import takeScreenshot, annotateImage
@@ -40,6 +40,8 @@ def adjustOrModifyGeneration(id, annotations, description):
     genImagePath = f'data/{id}/{lastVersion}_annotated.png' if len(annotations) > 0 else f'data/{id}/{lastVersion}.png'
     with open(genImagePath, "rb") as genImageF:
         genImg = base64.b64encode(genImageF.read()).decode("utf-8")
+    with open(f'data/{id}/{lastVersion}.html', "r") as genHtmlF:
+        genHtml = genHtmlF.read()
     with open(f'data/{id}/{lastVersion}_description.txt', 'w') as descF:
         descF.write(description)
     annotationDescriptions = []
@@ -52,9 +54,12 @@ def adjustOrModifyGeneration(id, annotations, description):
     if isAdjust:
         with open(f'data/{id}/{origImgName}', "rb") as origImgF:
             origImg = base64.b64encode(origImgF.read()).decode("utf-8")
-        html = adjustGenPrompt(origImg, genImg, annotationDescriptions, description)
+        if len(description) > 0 or len(annotationDescriptions) > 0:
+            html = adjustGenPrompt(origImg, genImg, genHtml, annotationDescriptions, description)
+        else:
+            html = selfRevisionPrompt(origImg, genImg, genHtml)
     else:
-        html = modifyGenPrompt(genImg, annotationDescriptions, description)
+        html = modifyGenPrompt(genImg, genHtml, annotationDescriptions, description)
     with open(f'data/{id}/{lastVersion+1}.html', 'w') as html_f:
         html_f.write(html)
     takeScreenshot(f'data/{id}/{lastVersion+1}.html')

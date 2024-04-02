@@ -11,31 +11,32 @@ const MainPage = ({init, onNewProject}) => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [lastVersion, setLastVersion] = useState(init['lastVersion'])
     const [isAdjust, setIsAdjust] = useState(init['isAdjust'])
+    const [description, setDescription] = useState("")
     const annotations = useRef([])
     const id = useRef(init['id'])
     const origImgName = useRef(init['origImgName'])
-    const description = useRef("")
 
     const onAdjustOrModify = () => {
-      let body = {
-        id: id.current,
-        annotations: annotations.current,
-        description: description.current
-      };
-      
-      axios.post(`http://127.0.0.1:5000/adjust-or-modify`, body)
+        let body = {
+            id: id.current,
+            annotations: annotations.current,
+            description: description
+        }   
+        setDescription('')
+        axios.post(`http://127.0.0.1:5000/adjust-or-modify`, body)
         .then(function (response) {
-          setLastVersion(response.data['lastVersion'])
+            setLastVersion(response.data['lastVersion'])
+            setDescription('')
         })
     }
 
     const onDownload = () => {
-      axios.get(`http://127.0.0.1:5000/data/${id.current}/${lastVersion}.html`, {
-        responseType: 'blob',
-      })
-      .then((res) => {
-        fileDownload(res.data, 'index.html')
-      })
+        axios.get(`http://127.0.0.1:5000/data/${id.current}/${lastVersion}.html`, {
+            responseType: 'blob',
+        })
+        .then((res) => {
+            fileDownload(res.data, 'index.html')
+        })
     }
 
     const onChangeStage = () => {
@@ -69,7 +70,11 @@ const MainPage = ({init, onNewProject}) => {
             <Content>
                 <Flex vertical style={{width: '95%', margin: 'auto', marginTop: 10}}>
                     <Typography.Text>Description</Typography.Text>
-                    <TextArea placeholder="Overall description of how you would like it to be changed" onChange={(e)=>description.current=e.target.value}/>
+                    <TextArea 
+                        placeholder="Overall description of how you would like it to be changed" 
+                        onChange={(e)=>setDescription(e.target.value)}
+                        value={description}
+                    />
                 </Flex>
                 <div style={{marginTop: 20}}>
                     <Flex justify={'space-around'}>
