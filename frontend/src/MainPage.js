@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import BBoxAnnotator from './BBoxAnnotator';
-import { Button, Modal, Flex, Image, Card, Layout } from 'antd';
+import { Button, Modal, Flex, Image, Card, Layout, Typography, Input } from 'antd';
 import axios from 'axios';
 import fileDownload from 'js-file-download'
 
 const { Header, Content } = Layout;
+const { TextArea } = Input;
 
 const MainPage = ({init, onNewProject}) => {
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -13,13 +14,13 @@ const MainPage = ({init, onNewProject}) => {
     const annotations = useRef([])
     const id = useRef(init['id'])
     const origImgName = useRef(init['origImgName'])
-    console.log(id.current)
-    console.log(init['id'])
+    const description = useRef("")
 
     const onAdjustOrModify = () => {
       let body = {
         id: id.current,
-        annotations: annotations.current
+        annotations: annotations.current,
+        description: description.current
       };
       
       axios.post(`http://127.0.0.1:5000/adjust-or-modify`, body)
@@ -57,41 +58,45 @@ const MainPage = ({init, onNewProject}) => {
                 alignItems: 'center',
             }}
             >
-            <Flex horizontal justify={'left'} gap={'large'}>
-                <Button type="primary" onClick={() => {setIsModalOpen(true)}}>Annotate</Button>
-                {isAdjust ? <Button type="primary" onClick={onAdjustOrModify}>Adjust</Button> : <Button type="primary" onClick={onAdjustOrModify}>Modify</Button>}
-                <Button type="primary" onClick={onDownload}>Download HTML</Button>
-                {isAdjust ? <Button type="primary" onClick={onChangeStage}>Modify Further</Button> : null}
-                <Button type="primary" onClick={onNewProject}>New Project</Button>
-            </Flex>
+                <Flex justify={'right'} gap={'large'} style={{width: '100%'}}>
+                    <Button type="primary" onClick={() => {setIsModalOpen(true)}}>Annotate</Button>
+                    {isAdjust ? <Button type="primary" onClick={onAdjustOrModify}>Adjust</Button> : <Button type="primary" onClick={onAdjustOrModify}>Modify</Button>}
+                    <Button type="primary" onClick={onDownload}>Download HTML</Button>
+                    {isAdjust ? <Button type="primary" onClick={onChangeStage}>Modify Further</Button> : null}
+                    <Button type="primary" onClick={onNewProject}>New Project</Button>
+                </Flex>
             </Header>
             <Content>
-            <div style={{marginTop: 50}}>
-                <Flex horizontal justify={'space-around'}>
-                <div style={{width: '45%'}}>
-                    <Card>
-                    <Image
-                        src={isAdjust ? `http://127.0.0.1:5000/data/${id.current}/${origImgName.current}` : `http://127.0.0.1:5000/data/${id.current}/${lastVersion > 0 ? `${lastVersion-1}.png` : origImgName.current}`}
-                    />
-                    </Card>
-                </div>
-                <div style={{width: '45%'}}>
-                    <Card>
-                    <Image
-                        src={`http://127.0.0.1:5000/data/${id.current}/${lastVersion}.png`}
-                    />
-                    </Card>
-                </div>
+                <Flex vertical style={{width: '95%', margin: 'auto', marginTop: 10}}>
+                    <Typography.Text>Description</Typography.Text>
+                    <TextArea placeholder="Overall description of how you would like it to be changed" onChange={(e)=>description.current=e.target.value}/>
                 </Flex>
-            </div>
+                <div style={{marginTop: 20}}>
+                    <Flex justify={'space-around'}>
+                        <div style={{width: '45%'}}>
+                            <Card>
+                                <Image
+                                    src={isAdjust ? `http://127.0.0.1:5000/data/${id.current}/${origImgName.current}` : `http://127.0.0.1:5000/data/${id.current}/${lastVersion > 0 ? `${lastVersion-1}.png` : origImgName.current}`}
+                                />
+                            </Card>
+                        </div>
+                        <div style={{width: '45%'}}>
+                            <Card>
+                                <Image
+                                    src={`http://127.0.0.1:5000/data/${id.current}/${lastVersion}.png`}
+                                />
+                            </Card>
+                        </div>
+                    </Flex>
+                </div>
             </Content>
             <Modal title="Basic Modal" open={isModalOpen} width={1500} onCancel={()=>setIsModalOpen(false)} onOk={()=>setIsModalOpen(false)}>
-            <BBoxAnnotator
-                url={`http://127.0.0.1:5000/data/${id.current}/${lastVersion}.png`}
-                inputMethod='text'
-                onChange={(e) => annotations.current=e}
-                style={{ maxWidth: 'auto' }}
-            />
+                <BBoxAnnotator
+                    url={`http://127.0.0.1:5000/data/${id.current}/${lastVersion}.png`}
+                    inputMethod='text'
+                    onChange={(e) => annotations.current=e}
+                    style={{ maxWidth: 'auto' }}
+                />
             </Modal>
         </Layout>
     )

@@ -12,7 +12,11 @@ const App = () => {
 
     return (
       <>
-        { page === 'frontPage' ? <FrontPage onFrontPageSubmit={onFrontPageSubmit}/> : <MainPage init={mainPageInit.current} onNewProject={()=>setPage('frontPage')}/> }
+        { page === 'frontPage' ? 
+          <FrontPage onFrontPageSubmit={onFrontPageSubmit}/> 
+          : 
+          <MainPage init={mainPageInit.current} onNewProject={()=>setPage('frontPage')}/> 
+        }
       </>
     );
 };

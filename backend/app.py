@@ -11,7 +11,7 @@ def newProject():
     origImgF = request.files['file']
     description = request.form['description']
     id = createNewProject(origImgF)
-    lastVersion = initialGeneration(id)
+    lastVersion = initialGeneration(id, description)
     return {'id': id, 'lastVersion': lastVersion, 'origImgName': origImgF.filename, 'isAdjust': True}
 
 @app.post("/project")
@@ -40,8 +40,9 @@ def adjust():
     body = request.json
     id = body['id']
     annotations = body['annotations']
+    description = body['description']
     annotate(id, annotations)
-    lastVersion = adjustOrModifyGeneration(id, annotations)
+    lastVersion = adjustOrModifyGeneration(id, annotations, description)
     return {'lastVersion': lastVersion}
 
 @app.route('/data/<path:path>')
