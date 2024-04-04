@@ -55,7 +55,7 @@ def gpt4v_call_adjust(origImg, genImg, prompt, annotations = None):
                                 "detail": "high",
                             },
                         },
-                        {"type": "text", "text": "FOCUS ON the RED Rectangles and improve the html by the following annotations:" + annotations},
+                        {"type": "text", "text": annotations},
                     ],
                 }
             ],
@@ -116,7 +116,7 @@ def gpt4v_call_modify(genImg, prompt, annotations):
                                 "detail": "high",
                             },
                         },
-                        {"type": "text", "text": "FOCUS ON the section WITHIN the RED Rectangles and improve the html by the following commends:" + annotations},
+                        {"type": "text", "text": annotations},
                     ],
                 }
             ],

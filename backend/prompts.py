@@ -4,7 +4,6 @@ def initGenPrompt(img, description):
 
     ## Extract text from the webpage
     extract_prompt = "Extract all texts from this image. One line for each block of text."
-    extract_prompt += "Also return the text based on HTML hiearchy."
     print("Extracting ...")
     texts = gpt4v_call(img, extract_prompt)
     print("Extracted")
@@ -52,9 +51,11 @@ def adjustGenPrompt(origImg, genImg, genHtml, annotations, description):
 
     print("Adjusting ...")
 
-    annotations_prompt = ""
+    annotations_prompt = "Find out all RED Rectangles on the Current Webpage. Each of them has their character name and represents one modification."
+    annotations_prompt += "Each modification is only applied to the section within the rectangle. Do not change anything outside the rectangle."
+    
     for annotation in annotations:
-        annotations_prompt += annotation[0] + ": " + annotation[1] + "\n"
+        annotations_prompt += "Rectangle " + annotation[0] + ": " + annotation[1] + "\n"
 
     html = gpt4v_call_adjust(origImg, genImg, prompt, annotations_prompt)
 
@@ -69,7 +70,7 @@ def selfRevisionPrompt(origImg, genImg, genHtml):
     prompt += "You are an expert web developer who specializes in HTML and CSS.\n"
     prompt += "I have an HTML file for implementing a webpage but it has some missing or wrong elements that are different from the original webpage. The current implementation I have is:\n" + genHtml + "\n\n"
     prompt += "I will provide the reference webpage that I want to build as well as the rendered webpage of the current implementation.\n"
-    prompt += "Please compare the two webpages and refer to the provided text elements to be included, and revise the original HTML implementation to make it look exactly like the reference webpage. Make sure the code is syntactically correct and can render into a well-formed webpage. You can use \"rick.jpg\" as the placeholder image file.\n"
+    prompt += "Please compare the two webpages and make current webpage look exactly the same as the reference webpage. Make sure the code is syntactically correct and can render into a well-formed webpage. You can use \"rick.jpg\" as the placeholder image file.\n"
     prompt += "Pay attention to things like size, text, position, and color of all the elements, as well as the overall layout. Blue boxes represent images and use \"rick.jpg\" as the placeholder.\n"
     prompt += "Respond directly with the content of the new revised and improved HTML file without any extra explanations:\n"
 
@@ -96,11 +97,12 @@ def modifyGenPrompt(genImg, genHtml, annotations, description):
 
     print("Modifying ...")
 
-    annotations_prompt = ""
+    annotations_prompt = "Find out all RED Rectangles on the Current Webpage. Each of them has their character name and represents one modification."
+    annotations_prompt += "Each modification only apply to the area within the rectangle. Do not change anything outside the rectangle."
+    
     for annotation in annotations:
-        annotations_prompt += annotation[0] + ": " + annotation[1] + "\n"
-
-    html = gpt4v_call_modify(genImg, genImg, prompt)
+        annotations_prompt += "Rectangle " + annotation[0] + ": " + annotation[1] + "\n"
+    html = gpt4v_call_modify(genImg, prompt, annotations_prompt)
 
     print("Modified")
 
