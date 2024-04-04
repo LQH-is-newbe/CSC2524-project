@@ -1,4 +1,5 @@
 from gpt4v import gpt4v_call, gpt4v_call_adjust, gpt4v_call_modify
+from utils import cleanup_response
 
 def initGenPrompt(img, description):
 
@@ -34,7 +35,7 @@ def initGenPrompt(img, description):
 
     print("Generated")
 
-    return html
+    return cleanup_response(html)
 
 def adjustGenPrompt(origImg, genImg, genHtml, annotations, description):
 
@@ -61,7 +62,7 @@ def adjustGenPrompt(origImg, genImg, genHtml, annotations, description):
 
     print("Adjusted")
 
-    return html
+    return cleanup_response(html)
 
 def selfRevisionPrompt(origImg, genImg, genHtml):
     
@@ -80,7 +81,7 @@ def selfRevisionPrompt(origImg, genImg, genHtml):
 
     print("Revised")
 
-    return html
+    return cleanup_response(html)
 
 
 def modifyGenPrompt(genImg, genHtml, annotations, description):
@@ -106,4 +107,4 @@ def modifyGenPrompt(genImg, genHtml, annotations, description):
 
     print("Modified")
 
-    return html
+    return cleanup_response(html)
