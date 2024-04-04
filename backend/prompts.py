@@ -66,23 +66,33 @@ def adjustGenPrompt(origImg, genImg, genHtml, annotations, description):
 
 def selfRevisionPrompt(origImg, genImg, genHtml):
     
-    ## Seems not so useful rn
+
+    ## Find the comparison between the current webpage and the reference page
+    diff_prompt = ""
+    diff_prompt += "You are an expert web developer who specializes in HTML and CSS.\n"
+    diff_prompt += "Find out the difference between the current webpage and the reference page\n"
+    diff_prompt += "The aim is to make the current webpage look exactly like the reference page.\n" 
+    diff_prompt += "The difference is not limited to the size of the image, the position of the text and the color of the text"
+    diff_prompt += "One line for each differenece. Only output the difference with out any explanation.\n"
+
+    print("Revising ...")
+
+    diff = gpt4v_call_adjust(origImg, genImg, diff_prompt)
+    print(diff)
+
     prompt = ""
     prompt += "You are an expert web developer who specializes in HTML and CSS.\n"
     prompt += "I have an HTML file for implementing a webpage but it has some missing or wrong elements that are different from the original webpage. The current implementation I have is:\n" + genHtml + "\n\n"
-    prompt += "I will provide the reference webpage that I want to build as well as the rendered webpage of the current implementation.\n"
-    prompt += "Please compare the two webpages and make current webpage look exactly the same as the reference webpage. Make sure the code is syntactically correct and can render into a well-formed webpage. You can use \"rick.jpg\" as the placeholder image file.\n"
+    prompt += "The differences are included\n" + diff + "\n"
+    prompt += "Make current webpage look exactly the same as the reference webpage. Make sure the code is syntactically correct and can render into a well-formed webpage. You can use \"rick.jpg\" as the placeholder image file.\n"
     prompt += "Pay attention to things like size, text, position, and color of all the elements, as well as the overall layout. Blue boxes represent images and use \"rick.jpg\" as the placeholder.\n"
     prompt += "Respond directly with the content of the new revised and improved HTML file without any extra explanations:\n"
-
-    print("Revising ...")
 
     html = gpt4v_call_adjust(origImg, genImg, prompt)
 
     print("Revised")
 
     return cleanup_response(html)
-
 
 def modifyGenPrompt(genImg, genHtml, annotations, description):
    
