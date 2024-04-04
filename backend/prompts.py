@@ -66,7 +66,6 @@ def adjustGenPrompt(origImg, genImg, genHtml, annotations, description):
 
 def selfRevisionPrompt(origImg, genImg, genHtml):
     
-
     ## Find the comparison between the current webpage and the reference page
     diff_prompt = ""
     diff_prompt += "You are an expert web developer who specializes in HTML and CSS.\n"
@@ -83,7 +82,7 @@ def selfRevisionPrompt(origImg, genImg, genHtml):
     prompt = ""
     prompt += "You are an expert web developer who specializes in HTML and CSS.\n"
     prompt += "I have an HTML file for implementing a webpage but it has some missing or wrong elements that are different from the original webpage. The current implementation I have is:\n" + genHtml + "\n\n"
-    prompt += "The differences are included\n" + diff + "\n"
+    prompt += "The differences are: \n" + diff + "\n"
     prompt += "Make current webpage look exactly the same as the reference webpage. Make sure the code is syntactically correct and can render into a well-formed webpage. You can use \"rick.jpg\" as the placeholder image file.\n"
     prompt += "Pay attention to things like size, text, position, and color of all the elements, as well as the overall layout. Blue boxes represent images and use \"rick.jpg\" as the placeholder.\n"
     prompt += "Respond directly with the content of the new revised and improved HTML file without any extra explanations:\n"
