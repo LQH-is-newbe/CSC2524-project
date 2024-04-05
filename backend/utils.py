@@ -57,4 +57,8 @@ def cleanup_response(response):
     if '</html>' in response:
         response = response.split('</html>')[0] + '</html>'
 
+    ## strip anything after '```json'
+    if 'json' in response:
+        response = response.split('json')[1] 
+
     return response 

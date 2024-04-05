@@ -39,30 +39,104 @@ def initGenPrompt(img, description):
 
 def adjustGenPrompt(origImg, genImg, genHtml, annotations, description):
 
+    # prompt = ""
+    # prompt += "You are an expert web developer who specializes in HTML and CSS.\n"
+    # prompt += "I have an HTML file for implementing a webpage but it has some missing or wrong elements that are different from the original webpage. The current implementation I have is:\n" + genHtml + "\n\n"
+    # prompt += "I will provide the reference webpage that I want to build as well as the rendered webpage of the current implementation.\n"
+
+    # if description:
+    #     prompt += "Extra description: " + description + "\n"
+
+    # prompt += "Pay attention to things like size, text, position, and color of all the elements, as well as the overall layout. Blue boxes represent images and use \"rick.jpg\" as the placeholder.\n"
+    # prompt += "Respond directly with the content of the new revised and improved HTML file without any extra explanations:\n"
+
+    # print("Adjusting ...")
+
+    # annotations_prompt = "Find out all RED Rectangles on the Current Webpage. Each of them has their character name and represents one modification."
+    # annotations_prompt += "Each modification is only applied to the section within the rectangle. Do not change anything outside the rectangle."
+    
+    # for annotation in annotations:
+    #     annotations_prompt += "Rectangle " + annotation[0] + ": " + annotation[1] + "\n"
+
+    # html = gpt4v_call_adjust(origImg, genImg, prompt, annotations_prompt)
+
+    # print("Adjusted")
+
+    # return cleanup_response(html)
+
+    ## Split the html
+    split_html = ""
+    html_list = genHtml.split('\n')
+    for i in range(len(html_list)):
+        split_html += f"Line {i}: {html_list[i]}\n"
+
+    ## Identify the Line to change based on the annotation
     prompt = ""
     prompt += "You are an expert web developer who specializes in HTML and CSS.\n"
-    prompt += "I have an HTML file for implementing a webpage but it has some missing or wrong elements that are different from the original webpage. The current implementation I have is:\n" + genHtml + "\n\n"
+    prompt += "I have an HTML file for implementing a webpage but it has some missing or wrong elements that are different from the original webpage."
+    prompt += "The current implementation I have is:\n" + split_html + "\n\n"
     prompt += "I will provide the reference webpage that I want to build as well as the rendered webpage of the current implementation.\n"
 
     if description:
         prompt += "Extra description: " + description + "\n"
 
     prompt += "Pay attention to things like size, text, position, and color of all the elements, as well as the overall layout. Blue boxes represent images and use \"rick.jpg\" as the placeholder.\n"
-    prompt += "Respond directly with the content of the new revised and improved HTML file without any extra explanations:\n"
+    prompt += "Please tell me which Line in the html file need to be changed\n"
 
     print("Adjusting ...")
 
     annotations_prompt = "Find out all RED Rectangles on the Current Webpage. Each of them has their character name and represents one modification."
     annotations_prompt += "Each modification is only applied to the section within the rectangle. Do not change anything outside the rectangle."
-    
+
     for annotation in annotations:
         annotations_prompt += "Rectangle " + annotation[0] + ": " + annotation[1] + "\n"
+    
+    annotations_prompt += "ONLY RETURN in pair of line number and modified code in json format, including replace, insert and delete action. "
+    annotations_prompt += "For example,[{'type': 'Replace', 'line': {'start': 1, 'end': 5}, 'new_code': 'new code'}, {'type': 'Insert', 'line': 7, 'new_code': 'new code'}, {'type': 'Delete', 'line': {'start': 10, 'end': 15} }]. NO explanation is needed"
+    annotations_prompt += "For Replace and Delete, start is inclusive while end is exclusive. For Insert, insertion happens before the line."
 
-    html = gpt4v_call_adjust(origImg, genImg, prompt, annotations_prompt)
+    change_list = gpt4v_call_adjust(origImg, genImg, prompt, annotations_prompt)
+    print(change_list)
+    print("HI")
 
-    print("Adjusted")
+    change_list = cleanup_response(change_list)
 
-    return cleanup_response(html)
+    change_list = eval(change_list)
+
+    def sort_key(x):
+        if x['type'] == 'Insert':
+            return x['line']
+        else:
+            return x['line']['start']
+
+    change_list.sort(key = sort_key)
+
+    offset = 0
+
+    for change in change_list:
+        if change['type'] == "Replace":
+
+            html_list[change['line']['start'] + offset] = change['new_code']
+            del html_list[change['line']['start'] + offset + 1: change['line']['end'] + offset]
+
+            offset -= (change['line']['end'] - change['line']['start'] -1)
+
+        elif change['type'] == "Insert":
+
+            html_list.insert(change['line'] + offset, change['new_code'])
+            offset += 1
+            
+        elif change['type'] == "Delete":
+
+            del html_list[change['line']['start'] + offset: change['line']['end'] + offset]
+            offset -= (change['line']['end'] - change['line']['start'])
+
+    html = "\n".join(html_list)
+
+    print(html)
+
+    return html
+
 
 def selfRevisionPrompt(origImg, genImg, genHtml):
     
