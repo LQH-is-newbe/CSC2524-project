@@ -13,6 +13,7 @@ const MainPage = ({init, onNewProject}) => {
     const [isAdjust, setIsAdjust] = useState(init['isAdjust'])
     const [description, setDescription] = useState("")
     const [spinning, setSpinning] = useState(false);
+    const [confirming, setConfirming] = useState(false);
     const annotations = useRef([])
     const id = useRef(init['id'])
     const origImgName = useRef(init['origImgName'])
@@ -27,9 +28,10 @@ const MainPage = ({init, onNewProject}) => {
         setDescription('')
         axios.post(`http://127.0.0.1:5000/adjust-or-modify`, body)
         .then(function (response) {
-            setLastVersion(response.data['lastVersion'])
+            setLastVersion(lastVersion+1)
             setDescription('')
             setSpinning(false)
+            setConfirming(true)
         })
     }
 
@@ -50,6 +52,20 @@ const MainPage = ({init, onNewProject}) => {
         axios.post(`http://127.0.0.1:5000/change-stage`, body)
     }
 
+    const onAccept = () => {
+        let body = {
+            id: id.current,
+        };
+        axios.post(`http://127.0.0.1:5000/accept`, body)
+        setConfirming(false)
+    }
+
+    const onReject = () => {
+        setLastVersion(lastVersion - 1)
+        setConfirming(false)
+    }
+    
+
     return (
         <Layout>
             <Header 
@@ -64,13 +80,21 @@ const MainPage = ({init, onNewProject}) => {
             >
                 <Flex justify={'space-between'} style={{width: '100%'}}>
                     <Typography.Text style={{color: 'white'}}>Project ID: {id.current}</Typography.Text>
-                    <Flex gap={'large'}>
-                        <Button type="primary" onClick={() => {setIsModalOpen(true)}}>Annotate</Button>
-                        {isAdjust ? <Button type="primary" onClick={onAdjustOrModify}>Adjust</Button> : <Button type="primary" onClick={onAdjustOrModify}>Modify</Button>}
-                        <Button type="primary" onClick={onDownload}>Download HTML</Button>
-                        {isAdjust ? <Button type="primary" onClick={onChangeStage}>Modify Further</Button> : null}
-                        <Button type="primary" onClick={onNewProject}>New Project</Button>
-                    </Flex>
+                    {confirming ? 
+                        <Flex gap={'large'}>
+                            <Typography.Text style={{color: 'white'}}>Do you accept this update?</Typography.Text>
+                            <Button type="primary" onClick={onAccept}>Accept</Button>
+                            <Button type="primary" onClick={onReject}>Reject</Button>
+                        </Flex>
+                        :
+                        <Flex gap={'large'}>
+                            <Button type="primary" onClick={() => {setIsModalOpen(true)}}>Annotate</Button>
+                            {isAdjust ? <Button type="primary" onClick={onAdjustOrModify}>Adjust</Button> : <Button type="primary" onClick={onAdjustOrModify}>Modify</Button>}
+                            <Button type="primary" onClick={onDownload}>Download HTML</Button>
+                            {isAdjust ? <Button type="primary" onClick={onChangeStage}>Modify Further</Button> : null}
+                            <Button type="primary" onClick={onNewProject}>New Project</Button>
+                        </Flex>
+                    }
                 </Flex>
             </Header>
             <Content>

@@ -63,9 +63,3 @@ def adjustOrModifyGeneration(id, annotations, description):
     with open(f'data/{id}/{lastVersion+1}.html', 'w') as html_f:
         html_f.write(html)
     takeScreenshot(f'data/{id}/{lastVersion+1}.html')
-    with open(f'data/{id}/meta.json', 'r+') as metaF:
-        meta = json.load(metaF)
-        meta['lastVersion'] = lastVersion+1
-        metaF.seek(0)
-        json.dump(meta, metaF)
-    return lastVersion+1

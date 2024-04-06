@@ -42,7 +42,18 @@ def adjust():
     annotations = body['annotations']
     description = body['description']
     annotate(id, annotations)
-    lastVersion = adjustOrModifyGeneration(id, annotations, description)
+    adjustOrModifyGeneration(id, annotations, description)
+    return ""
+
+@app.post("/accept")
+def accept():
+    id = request.json['id']
+    with open(f'data/{id}/meta.json', 'r+') as metaF:
+        meta = json.load(metaF)
+        lastVersion = meta['lastVersion'] + 1
+        meta['lastVersion'] = lastVersion
+        metaF.seek(0)
+        json.dump(meta, metaF)
     return {'lastVersion': lastVersion}
 
 @app.route('/data/<path:path>')
