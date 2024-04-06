@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import BBoxAnnotator from './BBoxAnnotator';
-import { Button, Modal, Flex, Image, Card, Layout, Typography, Input } from 'antd';
+import { Button, Modal, Flex, Image, Card, Layout, Typography, Input, Spin } from 'antd';
 import axios from 'axios';
 import fileDownload from 'js-file-download'
 
@@ -12,11 +12,13 @@ const MainPage = ({init, onNewProject}) => {
     const [lastVersion, setLastVersion] = useState(init['lastVersion'])
     const [isAdjust, setIsAdjust] = useState(init['isAdjust'])
     const [description, setDescription] = useState("")
+    const [spinning, setSpinning] = useState(false);
     const annotations = useRef([])
     const id = useRef(init['id'])
     const origImgName = useRef(init['origImgName'])
 
     const onAdjustOrModify = () => {
+        setSpinning(true)
         let body = {
             id: id.current,
             annotations: annotations.current,
@@ -27,6 +29,7 @@ const MainPage = ({init, onNewProject}) => {
         .then(function (response) {
             setLastVersion(response.data['lastVersion'])
             setDescription('')
+            setSpinning(false)
         })
     }
 
@@ -59,12 +62,15 @@ const MainPage = ({init, onNewProject}) => {
                 alignItems: 'center',
             }}
             >
-                <Flex justify={'right'} gap={'large'} style={{width: '100%'}}>
-                    <Button type="primary" onClick={() => {setIsModalOpen(true)}}>Annotate</Button>
-                    {isAdjust ? <Button type="primary" onClick={onAdjustOrModify}>Adjust</Button> : <Button type="primary" onClick={onAdjustOrModify}>Modify</Button>}
-                    <Button type="primary" onClick={onDownload}>Download HTML</Button>
-                    {isAdjust ? <Button type="primary" onClick={onChangeStage}>Modify Further</Button> : null}
-                    <Button type="primary" onClick={onNewProject}>New Project</Button>
+                <Flex justify={'space-between'} style={{width: '100%'}}>
+                    <Typography.Text style={{color: 'white'}}>Project ID: {id.current}</Typography.Text>
+                    <Flex gap={'large'}>
+                        <Button type="primary" onClick={() => {setIsModalOpen(true)}}>Annotate</Button>
+                        {isAdjust ? <Button type="primary" onClick={onAdjustOrModify}>Adjust</Button> : <Button type="primary" onClick={onAdjustOrModify}>Modify</Button>}
+                        <Button type="primary" onClick={onDownload}>Download HTML</Button>
+                        {isAdjust ? <Button type="primary" onClick={onChangeStage}>Modify Further</Button> : null}
+                        <Button type="primary" onClick={onNewProject}>New Project</Button>
+                    </Flex>
                 </Flex>
             </Header>
             <Content>
@@ -103,6 +109,7 @@ const MainPage = ({init, onNewProject}) => {
                     style={{ maxWidth: 'auto' }}
                 />
             </Modal>
+            <Spin spinning={spinning} fullscreen />
         </Layout>
     )
 }

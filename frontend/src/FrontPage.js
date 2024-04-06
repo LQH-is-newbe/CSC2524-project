@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { Button, Upload, Flex, Input, Typography } from 'antd';
+import React, { useRef, useState } from 'react';
+import { Button, Upload, Flex, Input, Typography, Spin } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -7,6 +7,7 @@ const { Dragger } = Upload;
 const { TextArea } = Input;
 
 const FrontPage = ({onFrontPageSubmit}) => {
+    const [spinning, setSpinning] = useState(false);
     const origImg = useRef(null)
     const description = useRef("")
     const projectId = useRef("")
@@ -20,6 +21,7 @@ const FrontPage = ({onFrontPageSubmit}) => {
     }
 
     const onGenerate = () => {
+        setSpinning(true)
         const formData = new FormData()
         formData.append('file', origImg.current)
         formData.append('description', description.current)
@@ -55,6 +57,7 @@ const FrontPage = ({onFrontPageSubmit}) => {
             </Flex>
             <Button type="primary" onClick={onResume}>Resume</Button>
             </Flex>
+            <Spin spinning={spinning} fullscreen />
         </div>
     )
 }
